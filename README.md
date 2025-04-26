@@ -121,6 +121,11 @@ It includes:
 | GET    | ```/api/public/clients/{id}/profile``` | Publicly accessible client profile  |
 
 ---
+# 🛡️ Security Considerations
+* Input validation using Laravel FormRequest
+* Public profile endpoint restricts sensitive fields
+
+---
 # ✅ To Run Locally
 
 - If you are a developer and you want to set up this project on your local machine, do this:
@@ -160,6 +165,7 @@ npm run dev
  *  ✅ Search filtering and pagination
  *  ✅ Authentication and admin login
  *  ✅ API versioning
+ *  ✅ Secure Endpoints
 
 ---
 # 🧠 Author
