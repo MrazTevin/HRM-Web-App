@@ -22,7 +22,7 @@ export default function Header() {
             onChange={(e: { target: { value: SetStateAction<string> } }) => setSearchQuery(e.target.value)}
           />
         </div>
-        <span className="text-xs text-gray-500 ml-2 hidden md:inline">K/B</span>
+        {/* <span className="text-xs text-gray-500 ml-2 hidden md:inline">K/B</span> */}
       </div>
 
       <div className="flex items-center space-x-4">
