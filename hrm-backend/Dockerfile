@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www/html
 
-# Install dependencies
+# Install dependencies and libraries
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -17,13 +17,16 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libzip-dev \
-    libonig-dev
+    libonig-dev \
+    libpq-dev  # Added for PostgreSQL support
 
-# Clear cache
+# Clear cache to reduce image size
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+RUN docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl
+
+# Install and configure GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 
