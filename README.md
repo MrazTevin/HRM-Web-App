@@ -26,7 +26,14 @@ It includes:
 - A public endpoint for exposing client profiles to external systems
 
 ---
-
+## 🧠 Core Entities
+* Client
+  ```id```, ```first_name```, ```last_name```, ```dob```, ```gender```, ```contact_info```
+* Program
+  ```id```, ```name```, ```description```
+* Description
+  ```client_id```, ```program_id```, ```enrolled_at```
+---
 ## 🔄 High-Level Flow
 
 1. **Doctor creates a health program**  
