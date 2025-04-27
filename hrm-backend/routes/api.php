@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\PublicClientController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ApiStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,5 @@ Route::post('enrollments', [EnrollmentController::class, 'store']);
 
 // Public Client Profile Route
 Route::get('public/clients/{id}/profile', [PublicClientController::class, 'profile']);
+
+Route::get('/status', [ApiStatusController::class, 'getStatus']);
