@@ -52,6 +52,12 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Set the entrypoint to our script
 ENTRYPOINT ["docker-entrypoint.sh"]
 
+# Run composer install as root
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+
+# Set permissions
+RUN chown -R www:www /var/www/html
+
 # Change current user to www
 USER www
 
