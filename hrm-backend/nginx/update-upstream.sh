@@ -4,6 +4,9 @@
 if [ -z "$BACKEND_URL" ]; then
   echo "BACKEND_URL environment variable is not set. Using default app:9000"
   BACKEND_URL="app:9000"
+else
+  # Strip protocol (http:// or https://) from BACKEND_URL
+  BACKEND_URL=$(echo "$BACKEND_URL" | sed -E 's|https?://||')
 fi
 
 # Replace the app:9000 with the environment variable
