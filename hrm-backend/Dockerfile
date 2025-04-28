@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www/html
 
-# Install dependencies and libraries
+# Install dependencies including nginx
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -11,56 +11,41 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     locales \
     zip \
-    jpegoptim optipng pngquant gifsicle \
     vim \
     unzip \
     git \
     curl \
     libzip-dev \
     libonig-dev \
-    libpq-dev  # Added for PostgreSQL support
-
-# Clear cache to reduce image size
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    nginx
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl
-
-# Install and configure GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Add user for application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
-
-# Copy existing application directory contents
+# Copy code
 COPY . /var/www/html
 
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www/html
+# Install dependencies
+RUN composer install --no-interaction --optimize-autoloader
 
-# Copy the entrypoint script into the container
-COPY docker-entrypoint.sh /usr/local/bin/
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/sites-available/default
 
-# Make the entrypoint script executable
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# Permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Set the entrypoint to our script
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Script to start both services
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Run composer install as root
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+# Expose port 80
+EXPOSE 80
 
-# Set permissions
-RUN chown -R www:www /var/www/html
-
-# Change current user to www
-USER www
-
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Set the entrypoint
+CMD ["/start.sh"]
