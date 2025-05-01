@@ -1,12 +1,12 @@
 export interface ProgramMetadata {
   id?: string
   program_id?: string
-  duration: string | number
+  duration: number
   department: string
   max_capacity: number
   current_enrollment: number
   status: "ACTIVE" | "UPCOMING" | "COMPLETED"
-  cost: number | string
+  cost: number
   created_at?: string
   updated_at?: string
 }
@@ -29,16 +29,23 @@ export interface Program {
 }
 
 export interface ProgramCreateRequest {
-name: string
-description: string
-metadata: {
-  duration: number | string
-  department: string
-  max_capacity: number
-  current_enrollment: number
-  start_date: string
-  end_date: string
-  status: string
-  cost: number | string
+  name: string
+  description: string
+  metadata: {
+    duration: number
+    department: string
+    max_capacity: number
+    current_enrollment: number
+    start_date: string
+    end_date: string
+    status: "ACTIVE" | "UPCOMING" | "COMPLETED"
+    cost: number
+  }
 }
+
+// Add new interface for update requests
+export interface ProgramUpdateRequest {
+  name?: string
+  description?: string
+  metadata?: Partial<ProgramMetadata>
 }

@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios"
 import axiosRetry from "axios-retry"
 import { toast } from "sonner"
-import { Program } from "@/types/program"
+import { Program, ProgramCreateRequest, ProgramUpdateRequest } from "@/types/program"
 import { Client, ClientCreateRequest } from "@/types/client"
 import { ApiResponse, ApiError, Enrollment, DashboardStats } from "@/types/api"
 
@@ -77,13 +77,13 @@ export const programsApi = {
   },
 
   // Create new program
-  create: async (programData: Program): Promise<ApiResponse<Program>> => {
+  create: async (programData: ProgramCreateRequest): Promise<ApiResponse<Program>> => {
     const response = await api.post("/api/programs", programData)
     return response.data
   },
 
   // Update program
-  update: async (id: string, programData: Program): Promise<ApiResponse<Program>> => {
+  update: async (id: string, programData: ProgramUpdateRequest): Promise<ApiResponse<Program>> => {
     const response = await api.patch(`/api/programs/${id}`, programData)
     return response.data
   },

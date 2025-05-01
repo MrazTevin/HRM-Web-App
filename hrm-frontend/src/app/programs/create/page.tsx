@@ -1,15 +1,18 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { programsApi } from "@/lib/api"
+import type { ProgramCreateRequest } from "@/types/program"
 
 export default function CreateProgramPage() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -22,18 +25,62 @@ export default function CreateProgramPage() {
     cost: "",
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }, [])
+
+  const validateForm = () => {
+    if (!formData.name || !formData.description || !formData.department) {
+      toast.error("Please fill in all required fields")
+      return false
+    }
+
+    const startDate = new Date(formData.startDate)
+    const endDate = new Date(formData.endDate)
+    
+    if (endDate <= startDate) {
+      toast.error("End date must be after start date")
+      return false
+    }
+
+    return true
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would send data to the API
-    console.log("Submitting program data:", formData)
+    
+    if (!validateForm()) {
+      return
+    }
 
-    // Redirect to programs page after submission
-    router.push("/programs")
+    setIsSubmitting(true)
+
+    try {
+      const programData: ProgramCreateRequest = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        metadata: {
+          duration: parseInt(formData.duration),
+          department: formData.department,
+          max_capacity: parseInt(formData.maxCapacity),
+          current_enrollment: 0,
+          start_date: new Date(formData.startDate).toISOString().split('T')[0],
+          end_date: new Date(formData.endDate).toISOString().split('T')[0],
+          status: formData.status as "ACTIVE" | "UPCOMING" | "COMPLETED",
+          cost: parseFloat(formData.cost)
+        }
+      }
+
+      // console.log('Sending data:', programData) // For debugging
+      const response = await programsApi.create(programData)
+      toast.success(response.message || "Program created successfully")
+      router.push("/programs")
+    } catch (error: any) {
+      // console.error('Error details:', error.response?.data) // For debugging
+      toast.error(error.response?.data?.message || "Failed to create program. Please try again.")
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -179,7 +226,9 @@ export default function CreateProgramPage() {
             <Button variant="outline" type="button" onClick={() => router.back()}>
               Cancel
             </Button>
-            <Button type="submit">Create Program</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Program"}
+            </Button>
           </CardFooter>
         </Card>
       </form>
