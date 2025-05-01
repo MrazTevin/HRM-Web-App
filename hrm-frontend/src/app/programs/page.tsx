@@ -1,11 +1,35 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { programsApi } from "@/lib/api"
+import type { Program } from "@/types/program"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { mockPrograms } from "@/lib/mock-data"
 import { formatCurrency } from "@/lib/utils"
+import { useQuery } from "@tanstack/react-query"
 
 export default function ProgramsPage() {
+  const router = useRouter()
+  
+  const { data: programsResponse, isLoading } = useQuery({
+    queryKey: ['programs'],
+    queryFn: () => programsApi.getAll(),
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+  })
+
+  const programs = programsResponse?.data || []
+
+  // Helper function to format ID
+  const formatId = (id: string) => {
+    // Extract last 4 characters of UUID and convert to number
+    const shortId = parseInt(id.replace(/-/g, '').slice(-4), 16)
+    return `#${shortId}`
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -82,25 +106,40 @@ export default function ProgramsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockPrograms.map((program) => (
-                <TableRow key={program.id}>
-                  <TableCell className="font-medium">{program.id}</TableCell>
-                  <TableCell>{program.name}</TableCell>
-                  <TableCell>{program.department}</TableCell>
-                  <TableCell>{program.duration}</TableCell>
-                  <TableCell>
-                    {program.currentEnrollment}/{program.maxCapacity}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
+                      <span>Loading programs...</span>
+                    </div>
                   </TableCell>
-                  <TableCell>{formatCurrency(program.cost)}</TableCell>
+                </TableRow>
+              ) : programs.map((program) => (
+                <TableRow key={program.id}>
+                  <TableCell className="font-medium">{formatId(program.id)}</TableCell>
+                  <TableCell>{program.name}</TableCell>
+                  <TableCell>{program.metadata.department}</TableCell>
+                  <TableCell>{program.metadata.duration}</TableCell>
                   <TableCell>
-                    <span className={`status-${program.status.toLowerCase()}`}>{program.status}</span>
+                    {program.metadata.current_enrollment}/{program.metadata.max_capacity}
+                  </TableCell>
+                  <TableCell>{formatCurrency(program.metadata.cost)}</TableCell>
+                  <TableCell>
+                    <span className={`status-${program.metadata.status.toLowerCase()}`}>
+                      {program.metadata.status}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => router.push(`/programs/${program.id}`)}>
                         View
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => router.push(`/programs/${program.id}/edit`)}
+                      >
                         Edit
                       </Button>
                     </div>
